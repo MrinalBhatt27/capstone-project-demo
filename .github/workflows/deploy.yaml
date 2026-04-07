@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: chatbot-backend
-  CLUSTER_NAME: your-eks-cluster
+  CLUSTER_NAME: chatbot-cluster
   DEPLOYMENT_NAME: chatbot-backend
 
 jobs:
