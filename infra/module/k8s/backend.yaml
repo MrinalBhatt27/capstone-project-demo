@@ -18,6 +18,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
+
+        # ✅ Correct env placement
         env:
         - name: GEMINI_API_KEY
-          value: "AIzaSyBmYlByB79zBY0lJPkD2p0fHWgBD9BKD_0"
+          valueFrom:
+            secretKeyRef:
+              name: gemini-secret
+              key: GEMINI_API_KEY

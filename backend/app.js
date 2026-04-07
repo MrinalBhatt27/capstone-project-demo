@@ -24,7 +24,13 @@ app.post("/chat", async (req, res) => {
       model: "gemini-2.5-flash"
     });
 
-    const result = await model.generateContent(userMessage);
+  const result = await model.generateContent({
+                              contents: [
+                                {
+                                  parts: [{ text: userMessage }]
+                                }
+                              ]
+                            });
     const response = await result.response;
     const text = response.text();
 

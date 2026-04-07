@@ -66,7 +66,25 @@ jobs:
       run: |
         aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
 
+    # 🔐 NEW: Inject secret into Kubernetes
+    - name: Create/Update Kubernetes Secret
+      run: |
+        kubectl create secret generic gemini-secret \
+          --from-literal=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+    # 🚀 Deploy new image
     - name: Deploy to EKS
       run: |
         kubectl set image deployment/$DEPLOYMENT_NAME \
         backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+
+    # 🔄 Restart pods to pick new secret
+    - name: Restart Deployment
+      run: |
+        kubectl rollout restart deployment $DEPLOYMENT_NAME
+
+    # 🔍 Optional: Verify rollout
+    - name: Verify Deployment
+      run: |
+        kubectl rollout status deployment $DEPLOYMENT_NAME
