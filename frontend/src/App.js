@@ -7,8 +7,8 @@ function App() {
 
   const chatRef = useRef();
 
-  // const API_URL = "http://aea17c6ff31b94d1da34ae857b00e256-790266999.us-east-1.elb.amazonaws.com";
-  const API_URL = "http://localhost:3000";
+  const API_URL = "http://aea17c6ff31b94d1da34ae857b00e256-790266999.us-east-1.elb.amazonaws.com";
+  // const API_URL = "http://localhost:3000";
 
   // 🔹 Load chat history on page load
   useEffect(() => {
