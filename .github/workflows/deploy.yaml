@@ -32,6 +32,7 @@ jobs:
         ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
     - name: Build Docker image
+      working-directory: backend
       run: |
         docker build -t $ECR_REPOSITORY .
 
