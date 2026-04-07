@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: 685448855545.dkr.ecr.us-east-1.amazonaws.com/chatbot-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GEMINI_API_KEY
+          value: "AIzaSyBmYlByB79zBY0lJPkD2p0fHWgBD9BKD_0"
