@@ -31,6 +31,21 @@ jobs:
         docker login --username AWS --password-stdin \
         ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Build frontend
+      working-directory: frontend
+      run: |
+        npm install
+        npm run build
+
+    - name: Deploy to S3
+      run: |
+        aws s3 sync frontend/build s3://$S3_BUCKET --delete
+
     - name: Build Docker image
       working-directory: backend
       run: |
