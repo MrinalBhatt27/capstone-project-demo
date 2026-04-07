@@ -9,6 +9,7 @@ env:
   ECR_REPOSITORY: chatbot-backend
   CLUSTER_NAME: chatbot-cluster
   DEPLOYMENT_NAME: chatbot-backend
+  S3_BUCKET: chatbot-frontend-bucket72
 
 jobs:
   deploy:
