@@ -7,6 +7,8 @@ provider "aws" {
 # -------------------
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 }
 
 # -------------------
@@ -106,9 +108,10 @@ resource "aws_iam_role_policy_attachment" "node_policy_2" {
   role       = aws_iam_role.node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
- resource "aws_iam_role_policy_attachment" "node_policy_3" {
-    role       = aws_iam_role.node_role.name
-    policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+
+resource "aws_iam_role_policy_attachment" "node_policy_3" {
+  role       = aws_iam_role.node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
 # -------------------
@@ -141,16 +144,75 @@ resource "aws_eks_node_group" "nodes" {
     aws_subnet.public_1.id,
     aws_subnet.public_2.id
   ]
-   
+
   scaling_config {
     desired_size = 2
     max_size     = 3
     min_size     = 1
   }
 
- depends_on = [
-  aws_iam_role_policy_attachment.node_policy_1,
-  aws_iam_role_policy_attachment.node_policy_2,
-  aws_iam_role_policy_attachment.node_policy_3
-]
+  depends_on = [
+    aws_iam_role_policy_attachment.node_policy_1,
+    aws_iam_role_policy_attachment.node_policy_2,
+    aws_iam_role_policy_attachment.node_policy_3
+  ]
+}
+
+# =========================================================
+# 🔥 RDS ADDITION STARTS HERE
+# =========================================================
+
+# Security Group for RDS
+resource "aws_security_group" "rds_sg" {
+  name        = "rds-sg"
+  description = "Allow Postgres access from VPC"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Subnet group
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name = "rds-subnet-group"
+
+  subnet_ids = [
+    aws_subnet.public_1.id,
+    aws_subnet.public_2.id
+  ]
+}
+
+# RDS Instance
+resource "aws_db_instance" "chatbot_db" {
+  identifier = "chatbot-db"
+
+  engine            = "postgres"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 20
+
+  db_name  = "chatbotdb"
+  username = "chatbotuser"
+  password = "Password123!"  # change later
+
+  publicly_accessible = true
+  skip_final_snapshot = true
+
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+}
+
+# Output endpoint
+output "rds_endpoint" {
+  value = aws_db_instance.chatbot_db.endpoint
 }

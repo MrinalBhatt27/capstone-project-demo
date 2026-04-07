@@ -1,10 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const chatRef = useRef();
+
+  // const API_URL = "http://aea17c6ff31b94d1da34ae857b00e256-790266999.us-east-1.elb.amazonaws.com";
+  const API_URL = "http://localhost:3000";
+
+  // 🔹 Load chat history on page load
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const res = await fetch(`${API_URL}/history`);
+        const data = await res.json();
+
+        const formatted = data
+          .reverse() // oldest first
+          .flatMap(item => [
+            { text: item.message, sender: "user" },
+            { text: item.response, sender: "bot" }
+          ]);
+
+        setMessages(formatted);
+      } catch (error) {
+        console.error("History load failed:", error);
+      }
+    };
+
+    loadHistory();
+  }, []);
+
+  // 🔹 Auto scroll to bottom
+  useEffect(() => {
+    chatRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // 🔹 Send message
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -13,8 +47,6 @@ function App() {
     setLoading(true);
 
     try {
-      const API_URL = "http://aea17c6ff31b94d1da34ae857b00e256-790266999.us-east-1.elb.amazonaws.com";
-      console.log(API_URL);
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: {
@@ -26,8 +58,8 @@ function App() {
       const data = await res.json();
 
       const botMessage = { text: data.reply, sender: "bot" };
-
       setMessages(prev => [...prev, botMessage]);
+
     } catch (error) {
       setMessages(prev => [
         ...prev,
@@ -41,7 +73,7 @@ function App() {
 
   return (
     <div style={styles.container}>
-      <h2>🤖 Cloud AI Chatbot</h2>
+      <h2>🤖 Ideal Software Chatbot</h2>
 
       <div style={styles.chatBox}>
         {messages.map((msg, index) => (
@@ -63,19 +95,30 @@ function App() {
         {loading && (
           <div style={styles.loading}>Bot is typing...</div>
         )}
+
+        <div ref={chatRef}></div>
       </div>
 
       <div style={styles.inputArea}>
         <input
-          style={styles.input}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-        />
+  style={styles.input}
+  value={input}
+  onChange={(e) => setInput(e.target.value)}
+  placeholder="Type a message..."
+  disabled={loading}
+/>
 
-        <button style={styles.button} onClick={sendMessage}>
-          Send
-        </button>
+        <button 
+  style={{
+    ...styles.button,
+    backgroundColor: loading ? "#ccc" : "#007bff",
+    cursor: loading ? "not-allowed" : "pointer"
+  }}
+  onClick={sendMessage}
+  disabled={loading}
+>
+  Send
+</button>
       </div>
     </div>
   );
