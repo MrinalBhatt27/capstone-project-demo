@@ -13,16 +13,33 @@ spec:
         app: backend
     spec:
       containers:
-      - name: backend
-        image: 685448855545.dkr.ecr.us-east-1.amazonaws.com/chatbot-backend:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 3000
+        - name: backend
+          image: 685448855545.dkr.ecr.us-east-1.amazonaws.com/chatbot-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
 
-        # ✅ Correct env placement
-        env:
-        - name: GEMINI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: gemini-secret
-              key: GEMINI_API_KEY
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: GEMINI_API_KEY
+
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_HOST
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASSWORD
