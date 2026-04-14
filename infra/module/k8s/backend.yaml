@@ -43,3 +43,11 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: DB_PASSWORD
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
